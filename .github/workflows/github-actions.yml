@@ -1,0 +1,13 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Phing Build
+        uses: phingofficial/phing-github-action@main
+        with:
+          targets: composer-dev linter tests

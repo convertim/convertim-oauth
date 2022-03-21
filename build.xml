@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="convertim-php" default="list">
+
+    <property name="path.bin" value="${path.vendor}/bin"/>
+    <property name="path.composer.executable" value="composer"/>
+    <property name="path.cs.executable" value="${path.bin}/phpcs"/>
+    <property name="path.cbf.executable" value="${path.bin}/phpcbf"/>
+    <property name="path.php.executable" value="php"/>
+    <property name="path.phplint.executable" value="${path.bin}/parallel-lint"/>
+    <property name="path.phpunit.executable" value="${path.bin}/phpunit"/>
+    <property name="path.root" value="."/>
+    <property name="path.src" value="${path.root}/src"/>
+    <property name="path.tests" value="tests"/>
+    <property name="path.vendor" value="${path.root}/vendor"/>
+
+    <target name="composer-dev" depends="composer-check" description="Installs dependencies for development.">
+        <exec executable="${path.composer.executable}" logoutput="true" passthru="true" checkreturn="true">
+            <arg value="install"/>
+        </exec>
+    </target>
+
+    <target name="composer-check" description="Checks if Composer lock file is valid." hidden="true">
+        <exec executable="${path.composer.executable}" logoutput="true" passthru="true" checkreturn="true">
+            <arg value="validate"/>
+            <arg value="--no-check-all"/>
+        </exec>
+    </target>
+
+    <target name="phpcs" description="Checks coding standards in all files by PHP easy coding standards." hidden="true">
+        <exec executable="${path.cs.executable}" logoutput="true" passthru="true" checkreturn="true">
+            <arg value="--no-cache"/>
+            <arg value="--report=diff"/>
+            <arg value="--standard=psr2"/>
+            <arg path="${path.src}"/>
+            <arg path="${path.tests}"/>
+            <arg path="${path.root}/*.md"/>
+        </exec>
+    </target>
+
+    <target name="phpcs-fix" description="Checks and fixes automatically fixable coding standards in all files by PHP easy coding standards." hidden="true">
+        <exec executable="${path.cbf.executable}" logoutput="true" passthru="true" checkreturn="true">
+            <arg value="--standard=PSR2"/>
+            <arg path="${path.src}"/>
+            <arg path="${path.tests}"/>
+            <arg path="${path.root}/*.md"/>
+        </exec>
+    </target>
+
+    <target name="list" description="Hidden target to make Phing list all targets when called without an argument." hidden="true">
+        <exec executable="${path.php.executable}" passthru="true" checkreturn="true">
+            <arg value="phing"/>
+            <arg value="-l"/>
+        </exec>
+    </target>
+
+    <target name="phplint" description="Checks syntax of PHP files." hidden="true">
+        <exec executable="${path.phplint.executable}" logoutput="true" passthru="true" checkreturn="true">
+            <arg path="${path.src}"/>
+            <arg path="${path.tests}"/>
+        </exec>
+    </target>
+
+    <target name="linter" depends="phplint,phpcs" description="Checks coding standards."/>
+
+    <target name="linter-fix" depends="phpcs-fix" description="Automatically fixes *some* coding standards violations in all files. Always run 'standards' to be sure there are no further violations."/>
+
+    <target name="test-unit" description="Run unit test">
+        <exec executable="${path.phpunit.executable}" logoutput="true" passthru="true" checkreturn="true">
+            <arg path="--testdox"/>
+            <arg path="tests"/>
+        </exec>
+    </target>
+
+    <target name="tests" depends="test-unit" description="Run all test"/>
+</project>
