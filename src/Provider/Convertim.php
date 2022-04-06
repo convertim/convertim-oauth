@@ -3,6 +3,7 @@
 namespace Convertim\OAuth2\Provider;
 
 use League\OAuth2\Client\Grant\AbstractGrant;
+use League\OAuth2\Client\OptionProvider\HttpBasicAuthOptionProvider;
 use League\OAuth2\Client\Provider\AbstractProvider;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Token\AccessToken;
@@ -15,6 +16,11 @@ class Convertim extends AbstractProvider
      * @var string Key used in a token response to identify the resource owner.
      */
     const ACCESS_TOKEN_RESOURCE_OWNER_ID = 'projectId';
+
+    /**
+     * @var string
+     */
+    protected $projectId;
 
     /**
      * @param string[] $options
@@ -31,6 +37,8 @@ class Convertim extends AbstractProvider
         } elseif (array_key_exists('projectId', $options) === false || $options['projectId'] === null) {
             throw new \InvalidArgumentException('The "projectId" option not set. Please set it.');
         }
+
+        $collaborators['optionProvider'] = new HttpBasicAuthOptionProvider();
 
         parent::__construct($options, $collaborators);
     }
@@ -70,7 +78,7 @@ class Convertim extends AbstractProvider
     }
 
     /**
-     * @param ResponseInterface $response
+     * @param \Psr\Http\Message\ResponseInterface $response
      * @param array|string $data
      *
      * @throws IdentityProviderException
@@ -105,7 +113,6 @@ class Convertim extends AbstractProvider
     {
         $accessToken = parent::createAccessToken($response, $grant);
 
-        // create the parent access token and add properties from response
         foreach ($response as $k => $v) {
             if (!property_exists($accessToken, $k)) {
                 $accessToken->$k = $v;
@@ -113,5 +120,30 @@ class Convertim extends AbstractProvider
         }
 
         return $accessToken;
+    }
+
+    /**
+     * @return string[]
+     */
+    protected function getDefaultHeaders()
+    {
+        return [
+            'x-project-id' => $this->projectId,
+        ];
+    }
+
+    /**
+     * @param \League\OAuth2\Client\Token\AccessToken|null $token
+     * @return string[]
+     */
+    protected function getAuthorizationHeaders($token = null)
+    {
+        if ($token === null) {
+            return [];
+        }
+
+        return [
+            'Authorization' => 'Bearer ' . $token->getToken(),
+        ];
     }
 }
