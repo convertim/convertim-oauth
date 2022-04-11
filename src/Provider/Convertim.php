@@ -23,6 +23,11 @@ class Convertim extends AbstractProvider
     protected $projectId;
 
     /**
+     * @var bool
+     */
+    protected $isDebug;
+
+    /**
      * @param string[] $options
      * @param array $collaborators
      */
@@ -36,6 +41,8 @@ class Convertim extends AbstractProvider
             throw new \InvalidArgumentException('The "redirectUri" option not set. Please set it.');
         } elseif (array_key_exists('projectId', $options) === false || $options['projectId'] === null) {
             throw new \InvalidArgumentException('The "projectId" option not set. Please set it.');
+        } elseif (array_key_exists('isDebug', $options) === false || $options['isDebug'] === null) {
+            throw new \InvalidArgumentException('The "isDebug" option not set. Please set it.');
         }
 
         $collaborators['optionProvider'] = new HttpBasicAuthOptionProvider();
@@ -57,6 +64,10 @@ class Convertim extends AbstractProvider
      */
     public function getBaseAccessTokenUrl(array $params)
     {
+        if ($this->isDebug === true) {
+            return 'https://convertim-api.tom-aws.eu/oauth';
+        }
+
         return 'https://api.convertim.com/oauth';
     }
 
@@ -66,6 +77,10 @@ class Convertim extends AbstractProvider
      */
     public function getResourceOwnerDetailsUrl(AccessToken $token)
     {
+        if ($this->isDebug === true) {
+            return 'https://convertim-api.tom-aws.eu/common?path=get-customer';
+        }
+
         return 'https://api.convertim.com/common?path=get-customer';
     }
 
@@ -87,7 +102,7 @@ class Convertim extends AbstractProvider
     {
         if ($response->getStatusCode() >= 400) {
             throw new IdentityProviderException(
-                $data['error'] ?: $response->getReasonPhrase(),
+                $data['message'] ?: $response->getReasonPhrase(),
                 $response->getStatusCode(),
                 $response
             );

@@ -96,7 +96,11 @@ class ConvertimResourceOwner implements ResourceOwnerInterface
      */
     public function getDeliveryAddresses()
     {
-        return $this->response['deliveryAddresses'];
+        if (array_key_exists('deliveryAddresses', $this->response) && is_array($this->response['deliveryAddresses'])) {
+            return $this->response['deliveryAddresses'];
+        }
+
+        return [];
     }
 
     /**
@@ -104,7 +108,11 @@ class ConvertimResourceOwner implements ResourceOwnerInterface
      */
     public function getBillingAddresses()
     {
-        return $this->response['billingAddresses'];
+        if (array_key_exists('billingAddresses', $this->response) && is_array($this->response['billingAddresses'])) {
+            return $this->response['billingAddresses'];
+        }
+
+        return [];
     }
 
     /**
